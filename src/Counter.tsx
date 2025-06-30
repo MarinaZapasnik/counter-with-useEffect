@@ -1,47 +1,14 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import "./App.css";
 
 
 export const Counter = () => {
 
-    const setValuesToLocalStorage = (minValue:number, maxValue:number, stepValue: number) => {
-        localStorage.setItem('minValueKey', JSON.stringify(minValue))
-        localStorage.setItem('maxValueKey', JSON.stringify(maxValue))
-        localStorage.setItem('stepValueKey', JSON.stringify(stepValue))
-    }
-    const setCountToLocalStorage = (count: number | null) => {
-        localStorage.setItem('countKey', JSON.stringify(count))
-    }
-
-    const getValuesFromLocalStorage = () => {
-        let minValueFromLS = localStorage.getItem('minValueKey')
-        let maxValueFromLS = localStorage.getItem('maxValueKey')
-        let stepValueFromLS = localStorage.getItem('stepValueKey')
-        
-        if (minValueFromLS && maxValueFromLS && stepValueFromLS) {
-            return ({
-                minValue: JSON.parse(minValueFromLS),
-                maxValue: JSON.parse(maxValueFromLS),
-                stepValue: JSON.parse(stepValueFromLS)
-            })
-        } else {
-            return ({
-                minValue: 0,
-                maxValue: 5,
-                stepValue: 1
-            })
-        }
-    }
-    const getCountFromLocalStorage = () => {
-        let countFromLS = localStorage.getItem('countKey')
-        return countFromLS ? JSON.parse(countFromLS) : 0
-    }
-
-    
     const  MIN_LIMIT_VALUE:number = 0 
     const  MAX_LIMIT_VALUE:number = 500 
     const  MIN_STEP_VALUE:number = 1 
 
+    
     const initialMessage = (minValue: number, maxValue: number, count: number | null, step: number) => {
         if (count !== null) {
             return null
@@ -68,12 +35,45 @@ export const Counter = () => {
         stepValue: number 
     }
 
-    const [values, setValues] = useState<ValuesProps>(getValuesFromLocalStorage())
-    const [count, setCount] = useState<number | null>(getCountFromLocalStorage());
+    const initialValues:ValuesProps = {
+            minValue: 0,
+            maxValue: 5,
+            stepValue: 1
+    }
+
+    const [values, setValues] = useState<ValuesProps>(initialValues)
+    const [count, setCount] = useState<number | null>(0);
     const [message, setMessage] = useState<MessageProps>(initialMessage(values.minValue, values.maxValue, count, values.stepValue));
     const [isSetDisabled, setSetDisabled] = useState<boolean>(message === 'incorrect value!')
     const [isIncDisabled, setIncDisabled] = useState<boolean>(true)
     const [isResetDisabled, setResetDisabled] = useState<boolean>(!!message)
+
+
+    useEffect(() => {
+        let minValueFromLS = localStorage.getItem('minValueKey')
+        let maxValueFromLS = localStorage.getItem('maxValueKey')
+        let stepValueFromLS = localStorage.getItem('stepValueKey')
+        let countFromLS = localStorage.getItem('countKey')
+
+        setValues( (minValueFromLS && maxValueFromLS && stepValueFromLS) ? 
+            {
+                minValue: JSON.parse(minValueFromLS),
+                maxValue: JSON.parse(maxValueFromLS),
+                stepValue: JSON.parse(stepValueFromLS)
+            } :
+            values
+        )
+
+        setCount(countFromLS ? JSON.parse(countFromLS): count)
+
+    }, [])
+
+    useEffect(() => {
+        localStorage.setItem('minValueKey', JSON.stringify(values.minValue))
+        localStorage.setItem('maxValueKey', JSON.stringify(values.maxValue))
+        localStorage.setItem('stepValueKey', JSON.stringify(values.stepValue))
+        localStorage.setItem('countKey', JSON.stringify(count))
+    }, [values, count])
 
     const isIncorrectValues = (minValue: number, maxValue: number, stepValue: number): boolean => {
             return minValue < MIN_LIMIT_VALUE ||
@@ -95,7 +95,6 @@ export const Counter = () => {
     const getValuesHandler = (event: ChangeEvent<HTMLInputElement>, value: 'minValue' | 'maxValue' | 'stepValue') => {
         setMessage("enter values and press 'set'" )
         setCount(null)
-        setCountToLocalStorage(null)
         const newValue = Number(event.target.value)
         const newValues = {...values, [value]: newValue}
         setValues(newValues)
@@ -105,8 +104,7 @@ export const Counter = () => {
             setMessage(isIncorrect ? 'incorrect value!' : count !== null ? null : "enter values and press 'set'" )
             setSetDisabled(isIncorrect ? true : false)
             
-                
-        setValuesToLocalStorage(newValues.minValue, newValues.maxValue, newValues.stepValue)
+            
     }    
 
     const setCountHandler = () => {
@@ -117,7 +115,6 @@ export const Counter = () => {
             setSetDisabled(true)
             setIncDisabled(false)
             setResetDisabled(false)
-            setCountToLocalStorage(values.minValue)
         } 
     }
 
@@ -130,7 +127,6 @@ export const Counter = () => {
             const isFinish = isRedCount(values.minValue, values.maxValue, values.stepValue, newCount)
             isFinish && setIncDisabled(true)
 
-            setCountToLocalStorage(newCount)
         }
     }
 
@@ -138,7 +134,6 @@ export const Counter = () => {
     const resetHandler = () => {
         setIncDisabled(false)
         setCount(values.minValue)
-        setCountToLocalStorage(values.minValue)
     }
 
     const setSettingsHandler = () => {
