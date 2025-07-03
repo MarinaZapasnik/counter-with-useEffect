@@ -1,5 +1,6 @@
 import { ChangeEvent, useState } from "react";
-import "./App.css";
+
+import { Input } from "../Input/Input";
 
 
 export const Counter = () => {
@@ -156,6 +157,11 @@ export const Counter = () => {
         setSetDisabled(isIncorrect ? true : false)
         
     }
+
+    const startValueInputClassNameCondition = 
+        values.minValue !== undefined 
+        && (values.minValue < MIN_LIMIT_VALUE 
+        || values.minValue >= values.maxValue!)
     
 
     return (
@@ -181,7 +187,16 @@ export const Counter = () => {
                         />    
                     </div>
                     <div style={{display: 'flex', gap: '20px', width: '100%', justifyContent: 'space-between'}}>
-                        <label className="label">start value:</label>
+                        <Input
+                            labelClassName="label"
+                            labelName="start value:"
+                            value={values.minValue}
+                            inputClassNameCondition={startValueInputClassNameCondition}
+                            onChange={(event) =>  getValuesHandler(event, 'minValue')}
+                            onClick={setSettingsHandler}
+                            
+                        />
+                        {/* <label className="label">start value:</label>
                         <input 
                             value={values.minValue}
                             className={
@@ -193,7 +208,7 @@ export const Counter = () => {
                             step={1}                          
                             onChange={(event: ChangeEvent<HTMLInputElement>) => getValuesHandler(event, 'minValue')}
                             onClick={setSettingsHandler}    
-                        />    
+                        />     */}
                     </div>    
                     <div style={{display: 'flex', gap: '20px', width: '100%', justifyContent: 'space-between'}}>
                         <label className="label">step:</label>
