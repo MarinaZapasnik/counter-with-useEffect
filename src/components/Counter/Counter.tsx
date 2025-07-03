@@ -162,6 +162,19 @@ export const Counter = () => {
         values.minValue !== undefined 
         && (values.minValue < MIN_LIMIT_VALUE 
         || values.minValue >= values.maxValue!)
+        || message === "incorrect value!"
+
+    const maxValueInputClassNameCondition = 
+        values.maxValue !== undefined 
+        && (values.maxValue > MAX_LIMIT_VALUE 
+        || values.maxValue <= values.minValue!)
+        
+    const stepValueInputClassNameCondition = 
+    (values.minValue !== undefined 
+        && (values.minValue < MIN_LIMIT_VALUE 
+        || values.minValue >= values.maxValue!)
+        || values.stepValue < MIN_STEP_VALUE)
+        
     
 
     return (
@@ -172,19 +185,15 @@ export const Counter = () => {
                 <div className="block" style={{gap: '15px', padding: '18px'}}>
 
                     <div style={{display: 'flex', gap: '20px', width: '100%', justifyContent: 'space-between'}}>
-                        <label className="label">max value:</label>
-                        <input 
+                        <Input
+                            labelClassName="label"
+                            labelName="max value:"
                             value={values.maxValue}
-                            className={
-                                (values.maxValue !== undefined 
-                                    && (values.maxValue > MAX_LIMIT_VALUE 
-                                        || values.maxValue <= values.minValue!))
-                                        ? 'inputerror' : 'input'} 
-                            type="number"
-                            step={1}
+                            inputClassNameCondition={maxValueInputClassNameCondition}
+                            onChange={(event) =>  getValuesHandler(event, 'maxValue')}
                             onClick={setSettingsHandler}
-                            onChange={(event: ChangeEvent<HTMLInputElement>) => getValuesHandler(event, 'maxValue')}
-                        />    
+                            
+                        />
                     </div>
                     <div style={{display: 'flex', gap: '20px', width: '100%', justifyContent: 'space-between'}}>
                         <Input
@@ -196,35 +205,17 @@ export const Counter = () => {
                             onClick={setSettingsHandler}
                             
                         />
-                        {/* <label className="label">start value:</label>
-                        <input 
-                            value={values.minValue}
-                            className={
-                                (values.minValue !== undefined 
-                                    && (values.minValue < MIN_LIMIT_VALUE 
-                                        || values.minValue >= values.maxValue!))
-                                        ? 'inputerror' : 'input'}  
-                            type="number"
-                            step={1}                          
-                            onChange={(event: ChangeEvent<HTMLInputElement>) => getValuesHandler(event, 'minValue')}
-                            onClick={setSettingsHandler}    
-                        />     */}
                     </div>    
                     <div style={{display: 'flex', gap: '20px', width: '100%', justifyContent: 'space-between'}}>
-                        <label className="label">step:</label>
-                        <input 
+                        <Input
+                            labelClassName="label"
+                            labelName="step:"
                             value={values.stepValue}
-                            className={
-                                (values.minValue !== undefined 
-                                    && (values.minValue < MIN_LIMIT_VALUE 
-                                        || values.minValue >= values.maxValue!)
-                                            || values.stepValue < MIN_STEP_VALUE)
-                                        ? 'inputerror' : 'input'}  
-                            type="number"
-                            step={1}                          
-                            onChange={(event: ChangeEvent<HTMLInputElement>) => getValuesHandler(event, 'stepValue')}
-                            onClick={setSettingsHandler}    
-                        />    
+                            inputClassNameCondition={stepValueInputClassNameCondition}
+                            onChange={(event) =>  getValuesHandler(event, 'stepValue')}
+                            onClick={setSettingsHandler}
+                            
+                        />
                     </div>    
                     
                 </div>
