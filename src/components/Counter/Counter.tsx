@@ -2,47 +2,17 @@ import { ChangeEvent, useState } from "react";
 
 import { Input } from "../Input/Input";
 import { Button } from "../Button/Button";
+import { getCountFromLocalStorage, getValuesFromLocalStorage, setCountToLocalStorage, setValuesToLocalStorage } from "../../utils/localStorageService";
 
+export type ValuesProps = {
+    minValue: number 
+    maxValue: number
+    stepValue: number 
+}
 
 export const Counter = () => {
 
 
-    const setValuesToLocalStorage = (minValue:number, maxValue:number, stepValue: number) => {
-        localStorage.setItem('minValueKey', JSON.stringify(minValue))
-        localStorage.setItem('maxValueKey', JSON.stringify(maxValue))
-        localStorage.setItem('stepValueKey', JSON.stringify(stepValue))
-    }
-    const setCountToLocalStorage = (count: number | null) => {
-        localStorage.setItem('countKey', JSON.stringify(count))
-    }
-
-    
-
-    const getValuesFromLocalStorage = () => {
-        let minValueFromLS = localStorage.getItem('minValueKey')
-        let maxValueFromLS = localStorage.getItem('maxValueKey')
-        let stepValueFromLS = localStorage.getItem('stepValueKey')
-        
-        if (minValueFromLS && maxValueFromLS && stepValueFromLS) {
-            return ({
-                minValue: JSON.parse(minValueFromLS),
-                maxValue: JSON.parse(maxValueFromLS),
-                stepValue: JSON.parse(stepValueFromLS)
-            })
-        } else {
-            return ({
-                minValue: 0,
-                maxValue: 5,
-                stepValue: 1
-            })
-        }
-    }
-    const getCountFromLocalStorage = () => {
-        let countFromLS = localStorage.getItem('countKey')
-        return countFromLS ? JSON.parse(countFromLS) : 0
-    }
-
-    
     const  MIN_LIMIT_VALUE:number = 0 
     const  MAX_LIMIT_VALUE:number = 500 
     const  MIN_STEP_VALUE:number = 1 
@@ -68,13 +38,9 @@ export const Counter = () => {
 
     type MessageProps = "enter values and press 'set'" | "incorrect value!" | null
 
-    type ValuesProps = {
-        minValue: number 
-        maxValue: number
-        stepValue: number 
-    }
+    
 
-    const [values, setValues] = useState<ValuesProps>(getValuesFromLocalStorage())
+    const [values, setValues] = useState<ValuesProps>(() => getValuesFromLocalStorage())
     const [count, setCount] = useState<number | null>(getCountFromLocalStorage());
     const [message, setMessage] = useState<MessageProps>(initialMessage(values.minValue, values.maxValue, count, values.stepValue));
     const [isSetDisabled, setSetDisabled] = useState<boolean>(message !== 'enter values and press \'set\'' )
@@ -89,11 +55,14 @@ export const Counter = () => {
                 maxValue - minValue < stepValue
         };
 
-    const isRedCount = (minValue: number, maxValue: number, stepValue: number, count: number | null): boolean => {
+    const isRedCount = ( maxValue: number, stepValue: number, count: number | null): boolean => {
         
-        return stepValue === 1  ?
-                    count === maxValue :
-                    count !== null && count > Math.floor((maxValue - minValue) / stepValue) * stepValue
+        // return stepValue === 1  ?
+        //             count === maxValue :
+        //             count !== null && count > Math.floor((maxValue - minValue) / stepValue) * stepValue
+        if (count === null) return false;
+
+        return count + stepValue > maxValue;
     }
 
 
@@ -133,7 +102,7 @@ export const Counter = () => {
             const newCount = count + values.stepValue
             setCount(newCount)            
 
-            const isFinish = isRedCount(values.minValue, values.maxValue, values.stepValue, newCount)
+            const isFinish = isRedCount(values.maxValue, values.stepValue, newCount)
             isFinish && setIncDisabled(true)
 
             setCountToLocalStorage(newCount)
@@ -236,7 +205,7 @@ export const Counter = () => {
             <div className="container">
 
                 <div className="block">
-                    <h2 className={isRedCount(values.minValue, values.maxValue, values.stepValue, count) ? 'bigredcount' : 'count'}>
+                    <h2 className={isRedCount(values.maxValue, values.stepValue, count) ? 'bigredcount' : 'count'}>
                         {count}
                     </h2>
                     <h2 className={message === "incorrect value!" ? 'redtext' : 'text'}>
