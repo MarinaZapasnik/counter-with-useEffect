@@ -1,6 +1,7 @@
 import { ChangeEvent, useState } from "react";
 
 import { Input } from "../Input/Input";
+import { Button } from "../Button/Button";
 
 
 export const Counter = () => {
@@ -221,13 +222,12 @@ export const Counter = () => {
                 </div>
 
                 <div className='buttonFrame' >
-                    
-                    <button 
-                        disabled={isSetDisabled}
-                        className="btn"
-                        onClick={setCountHandler}>
-                            set
-                    </button>
+                    <Button 
+                        buttonClassName="btn"
+                        buttonName="set"
+                        isButtonDisabled={isSetDisabled}
+                        onClick={setCountHandler}
+                    />
                 </div>
 
             </div>
@@ -246,21 +246,20 @@ export const Counter = () => {
 
                 <div className='buttonFrame' >
                     <div style={{display: 'flex', gap: '20px'}}>
-                        <button 
-                            disabled={isIncDisabled}
-                            className="btn"
-                            onClick={incrementHahdler}>
-                                inc
-                        </button>
-
+                        <Button
+                            buttonName="inc"
+                            buttonClassName="btn"
+                            isButtonDisabled={isIncDisabled}
+                            onClick={incrementHahdler}
+                        />
+                        <Button
+                            buttonName="reset"
+                            buttonClassName="btn"
+                            isButtonDisabled={isResetDisabled}
+                            onClick={resetHandler}
+                        />
                     </div>
                     
-                    <button 
-                        disabled={isResetDisabled}
-                        className="btn"
-                        onClick={resetHandler}>
-                            reset
-                    </button> 
                 </div>
 
             </div>
