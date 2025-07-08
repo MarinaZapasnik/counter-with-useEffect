@@ -10,35 +10,33 @@ export type ValuesProps = {
     stepValue: number 
 }
 
+type MessageProps = "enter values and press 'set'" | "incorrect value!" | null
+
+const  MIN_LIMIT_VALUE:number = 0 
+const  MAX_LIMIT_VALUE:number = 500 
+const  MIN_STEP_VALUE:number = 1 
+
 export const Counter = () => {
 
+    const isIncorrectValues = (minValue: number, maxValue: number, stepValue: number): boolean => {
+        return minValue < MIN_LIMIT_VALUE ||
+            maxValue > MAX_LIMIT_VALUE || 
+            minValue >= maxValue ||
+            stepValue < MIN_STEP_VALUE ||
+            maxValue - minValue < stepValue
+    };
 
-    const  MIN_LIMIT_VALUE:number = 0 
-    const  MAX_LIMIT_VALUE:number = 500 
-    const  MIN_STEP_VALUE:number = 1 
+    const initialMessage = (
+        minValue: number, 
+        maxValue: number, 
+        count: number | null, 
+        stepValue: number
+    ): MessageProps => {
 
-    const initialMessage = (minValue: number, maxValue: number, count: number | null, step: number) => {
-        if (count !== null) {
-            return null
-        }  else
-
-        if (minValue >= MIN_LIMIT_VALUE 
-            && maxValue <= MAX_LIMIT_VALUE 
-            && minValue < maxValue
-            && step >= MIN_STEP_VALUE
-            && (maxValue - minValue) >= step
-            ) {
-                return "enter values and press 'set'"
-            } else { 
-                return "incorrect value!"
-            }
-
+        if (count !== null) return null;
+        return isIncorrectValues(minValue, maxValue, stepValue)
+        ? "incorrect value!" : "enter values and press 'set'" ;
     }
-
-
-    type MessageProps = "enter values and press 'set'" | "incorrect value!" | null
-
-    
 
     const [values, setValues] = useState<ValuesProps>(() => getValuesFromLocalStorage())
     const [count, setCount] = useState<number | null>(getCountFromLocalStorage());
@@ -47,13 +45,7 @@ export const Counter = () => {
     const [isIncDisabled, setIncDisabled] = useState<boolean>(count === null || count >= values.maxValue)
     const [isResetDisabled, setResetDisabled] = useState<boolean>(!!message)
 
-    const isIncorrectValues = (minValue: number, maxValue: number, stepValue: number): boolean => {
-            return minValue < MIN_LIMIT_VALUE ||
-                maxValue > MAX_LIMIT_VALUE || 
-                minValue >= maxValue ||
-                stepValue < MIN_STEP_VALUE ||
-                maxValue - minValue < stepValue
-        };
+    
 
     const isRedCount = ( maxValue: number, stepValue: number, count: number | null): boolean => {
         
@@ -86,7 +78,7 @@ export const Counter = () => {
 
     const setCountHandler = () => {
 
-        if (values.minValue >= MIN_LIMIT_VALUE && values.maxValue <= MAX_LIMIT_VALUE && values.minValue <= values.maxValue) {
+        if (!isIncorrectValues(values.minValue, values.maxValue, values.stepValue)) {
             setMessage(null)
             setCount(values.minValue)
             setSetDisabled(true)
@@ -117,8 +109,6 @@ export const Counter = () => {
     }
 
     const setSettingsHandler = () => {
-        
-        
         setIncDisabled(true)
         setResetDisabled(true)
         setCount(null)
