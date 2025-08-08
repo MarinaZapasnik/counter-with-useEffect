@@ -1,8 +1,12 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 
 import { Input } from "../Input/Input";
 import { Button } from "../Button/Button";
 import { getCountFromLocalStorage, getValuesFromLocalStorage, setCountToLocalStorage, setValuesToLocalStorage } from "../../utils/localStorageService";
+
+const  MIN_LIMIT_VALUE:number = 0 
+const  MAX_LIMIT_VALUE:number = 500 
+const  MIN_STEP_VALUE:number = 1 
 
 export type ValuesProps = {
     minValue: number 
@@ -12,128 +16,94 @@ export type ValuesProps = {
 
 type MessageProps = "enter values and press 'set'" | "incorrect value!" | null
 
-const  MIN_LIMIT_VALUE:number = 0 
-const  MAX_LIMIT_VALUE:number = 500 
-const  MIN_STEP_VALUE:number = 1 
-
 export const Counter = () => {
-
-    const isIncorrectValues = (minValue: number, maxValue: number, stepValue: number): boolean => {
-        return minValue < MIN_LIMIT_VALUE ||
-            maxValue > MAX_LIMIT_VALUE || 
-            minValue >= maxValue ||
-            stepValue < MIN_STEP_VALUE ||
-            maxValue - minValue < stepValue
-    };
-
-    const initialMessage = (
-        minValue: number, 
-        maxValue: number, 
-        count: number | null, 
-        stepValue: number
-    ): MessageProps => {
-
-        if (count !== null) return null;
-        return isIncorrectValues(minValue, maxValue, stepValue)
-        ? "incorrect value!" : "enter values and press 'set'" ;
-    }
-
     const [values, setValues] = useState<ValuesProps>(() => getValuesFromLocalStorage())
     const [count, setCount] = useState<number | null>(getCountFromLocalStorage());
-    const [message, setMessage] = useState<MessageProps>(initialMessage(values.minValue, values.maxValue, count, values.stepValue));
-    const [isSetDisabled, setSetDisabled] = useState<boolean>(message !== 'enter values and press \'set\'' )
-    const [isIncDisabled, setIncDisabled] = useState<boolean>(count === null || count >= values.maxValue)
-    const [isResetDisabled, setResetDisabled] = useState<boolean>(!!message)
-
     
+    const isIncorrectValues = useMemo(() => {
+        return (
+            values.minValue < MIN_LIMIT_VALUE ||
+            values.maxValue > MAX_LIMIT_VALUE || 
+            values.minValue >= values.maxValue ||
+            values.stepValue < MIN_STEP_VALUE ||
+            values.maxValue - values.minValue < values.stepValue
+        ) 
+            },[values]);
 
-    const isRedCount = ( maxValue: number, stepValue: number, count: number | null): boolean => {
-        
-        // return stepValue === 1  ?
-        //             count === maxValue :
-        //             count !== null && count > Math.floor((maxValue - minValue) / stepValue) * stepValue
+    const message: MessageProps = useMemo(() => {
+        if (count !== null) return null;
+        return isIncorrectValues
+        ? "incorrect value!" 
+        : "enter values and press 'set'" ;
+    }, [count, isIncorrectValues])
+
+    const isSetDisabled = useMemo(() => {
+        return message !== 'enter values and press \'set\'';
+    }, [message]);
+
+    const isIncDisabled = useMemo(() => {
+        return count === null || count >= values.maxValue  
+        }, [count, values.maxValue] )
+
+    const isResetDisabled = useMemo(() => {
+        return !!message
+    }, [message])
+
+    const isRedCount = useMemo(() => {
         if (count === null) return false;
-
-        return count + stepValue > maxValue;
-    }
-
-
+        return count + values.stepValue > values.maxValue;  
+    }, [count, values.stepValue, values.maxValue])
 
     const getValuesHandler = (event: ChangeEvent<HTMLInputElement>, value: 'minValue' | 'maxValue' | 'stepValue') => {
-        setMessage("enter values and press 'set'" )
         setCount(null)
         setCountToLocalStorage(null)
         const newValue = Number(event.target.value)
         const newValues = {...values, [value]: newValue}
         setValues(newValues)
-
-        const isIncorrect = isIncorrectValues(newValues.minValue, newValues.maxValue, newValues.stepValue);
-
-            setMessage(isIncorrect ? 'incorrect value!' : count !== null ? null : "enter values and press 'set'" )
-            setSetDisabled(isIncorrect ? true : false)
-            
-                
         setValuesToLocalStorage(newValues.minValue, newValues.maxValue, newValues.stepValue)
     }    
 
     const setCountHandler = () => {
-
-        if (!isIncorrectValues(values.minValue, values.maxValue, values.stepValue)) {
-            setMessage(null)
+        if (!isIncorrectValues) {
             setCount(values.minValue)
-            setSetDisabled(true)
-            setIncDisabled(false)
-            setResetDisabled(false)
             setCountToLocalStorage(values.minValue)
         } 
     }
 
     const incrementHahdler = () => {
-        
         if (typeof(count) === 'number') {
             const newCount = count + values.stepValue
-            setCount(newCount)            
-
-            const isFinish = isRedCount(values.maxValue, values.stepValue, newCount)
-            isFinish && setIncDisabled(true)
-
+            setCount(newCount) 
             setCountToLocalStorage(newCount)
         }
     }
 
-
     const resetHandler = () => {
-        setIncDisabled(false)
         setCount(values.minValue)
         setCountToLocalStorage(values.minValue)
     }
 
     const setSettingsHandler = () => {
-        setIncDisabled(true)
-        setResetDisabled(true)
-        setCount(null)
-        const isIncorrect = isIncorrectValues(values.minValue, values.maxValue, values.stepValue);
-        setMessage(isIncorrect ? 'incorrect value!' : "enter values and press 'set'" )
-        setSetDisabled(isIncorrect ? true : false)
-        
+        setCount(null)       
     }
 
-    const startValueInputClassNameCondition = 
-        values.minValue !== undefined 
-        && (values.minValue < MIN_LIMIT_VALUE 
-        || values.minValue >= values.maxValue!)
-        || message === "incorrect value!"
+    // const startValueInputClassNameCondition = 
+    //     values.minValue !== undefined 
+    //     && (values.minValue < MIN_LIMIT_VALUE 
+    //     || values.minValue >= values.maxValue!)
+    //     || message === "incorrect value!"
 
-    const maxValueInputClassNameCondition = 
-        values.maxValue !== undefined 
-        && (values.maxValue > MAX_LIMIT_VALUE 
-        || values.maxValue <= values.minValue!)
+    // const maxValueInputClassNameCondition = 
+    //     values.maxValue !== undefined 
+    //     && (values.maxValue > MAX_LIMIT_VALUE 
+    //     || values.maxValue <= values.minValue!)
         
-    const stepValueInputClassNameCondition = 
-    (values.minValue !== undefined 
-        && (values.minValue < MIN_LIMIT_VALUE 
-        || values.minValue >= values.maxValue!)
-        || values.stepValue < MIN_STEP_VALUE)
+    // const stepValueInputClassNameCondition = 
+    // (values.minValue !== undefined 
+    //     && (values.minValue < MIN_LIMIT_VALUE 
+    //     || values.minValue >= values.maxValue!)
+    //     || values.stepValue < MIN_STEP_VALUE
+    //     || values.stepValue > values.maxValue - values.minValue)
         
     
 
@@ -149,7 +119,7 @@ export const Counter = () => {
                             labelClassName="label"
                             labelName="max value:"
                             value={values.maxValue}
-                            inputClassNameCondition={maxValueInputClassNameCondition}
+                            inputClassNameCondition={message === "incorrect value!"}
                             onChange={(event) =>  getValuesHandler(event, 'maxValue')}
                             onClick={setSettingsHandler}
                             
@@ -160,7 +130,7 @@ export const Counter = () => {
                             labelClassName="label"
                             labelName="start value:"
                             value={values.minValue}
-                            inputClassNameCondition={startValueInputClassNameCondition}
+                            inputClassNameCondition={message === "incorrect value!"}
                             onChange={(event) =>  getValuesHandler(event, 'minValue')}
                             onClick={setSettingsHandler}
                             
@@ -171,7 +141,7 @@ export const Counter = () => {
                             labelClassName="label"
                             labelName="step:"
                             value={values.stepValue}
-                            inputClassNameCondition={stepValueInputClassNameCondition}
+                            inputClassNameCondition={message === "incorrect value!"}
                             onChange={(event) =>  getValuesHandler(event, 'stepValue')}
                             onClick={setSettingsHandler}
                             
@@ -195,7 +165,7 @@ export const Counter = () => {
             <div className="container">
 
                 <div className="block">
-                    <h2 className={isRedCount(values.maxValue, values.stepValue, count) ? 'bigredcount' : 'count'}>
+                    <h2 className={isRedCount ? 'bigredcount' : 'count'}>
                         {count}
                     </h2>
                     <h2 className={message === "incorrect value!" ? 'redtext' : 'text'}>
