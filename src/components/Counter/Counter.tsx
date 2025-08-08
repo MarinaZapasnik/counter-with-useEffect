@@ -42,8 +42,8 @@ export const Counter = () => {
     }, [message]);
 
     const isIncDisabled = useMemo(() => {
-        return count === null || count >= values.maxValue  
-        }, [count, values.maxValue] )
+        return count === null || count >= values.maxValue || count+values.stepValue > values.maxValue 
+        }, [count, values.maxValue, values.stepValue] )
 
     const isResetDisabled = useMemo(() => {
         return !!message
